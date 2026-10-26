@@ -1,54 +1,69 @@
 #!/usr/bin/env python3
-"""
-CGTEL Demo Script with Real LLM Reasoning Agent
-Demonstrates natural language task instructions processed by LLMAgent using Google's Gemini API tool-calling,
-flowing through interception, real confidence extraction (logprobs / self-consistency proxy), risk scoring, and policy routing.
-"""
-
+"""CGTEL Gemini integration demo. Pass --offline for the deterministic fallback."""
 import os
+import sys
+
 from cgtel.agent.llm_agent import LLMAgent
+from cgtel.router.decision_router import DecisionRouter
 
 
-def run_llm_agent_demo():
-    print("=" * 75)
-    print("   CGTEL Demo: LLM Agent Reasoning Core + Context-Gated Tool Execution")
-    print("=" * 75)
+TASKS = [
+    "Read the application configuration file config/app_settings.json.",
+    "Delete the temporary session cache file at /tmp/session_cache.tmp.",
+    "Process a subscription payment of 149.99 USD for account acc_user_4042.",
+    "Reject the proposed subscription payment of 149.99 USD for account acc_user_4042.",
+]
 
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    api_key_status = "DETECTED" if api_key else "NOT SET (Using Rule-based Fallback)"
-    print(f"  [STATUS] GEMINI_API_KEY: {api_key_status}\n")
 
-    agent = LLMAgent()
-
-    task_instructions = [
-        "Read the current application configuration file config/app_settings.json to inspect system parameters.",
-        "Clean up and recursively delete the temporary session cache file at /tmp/session_cache.tmp.",
-        "Process this month's subscription payment of 149.99 USD for account acc_user_4042.",
-    ]
-
-    for i, instruction in enumerate(task_instructions, 1):
-        print(f"--> Task {i}: '{instruction}'")
-        res = agent.run_task(instruction, auto_approve=True)
-
-        tool_name = res["tool_name"]
-        args = res["args"]
-        result = res["result"]
-        confidence = res["extracted_confidence"]
-        dec = res["decision"]
-
-        print(f"    Selected Tool  : {tool_name}")
-        print(f"    Tool Arguments : {args}")
-        print(f"    LLM Confidence : {confidence:.4f}")
-        if dec:
-            print(f"    Assigned Tier  : {dec.tier.value}")
-            print(f"    Risk Score     : {dec.score:.4f}")
-            print(f"    Signals        : {dec.contributing_signals}")
-        print(f"    Returned       : {result}\n")
-
-    print("=" * 75)
-    print("LLM Agent Demo completed successfully.")
-    print("=" * 75)
+def main():
+    offline = "--offline" in sys.argv
+    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not offline and not key:
+        print("LIVE GEMINI DEMO requires GEMINI_API_KEY or GOOGLE_API_KEY; no run started.", file=sys.stderr)
+        return 2
+    print("OFFLINE FALLBACK - NOT A LIVE LLM RUN" if offline else
+          "LIVE GEMINI RUN | model: {}".format(os.environ.get("CGTEL_GEMINI_MODEL", "gemini-flash-latest")))
+    review_answers = iter(["y", "n"])
+    def scripted_review(prompt):
+        print("SCRIPTED REVIEWER (demo only): ", end="")
+        answer = next(review_answers, "n")
+        print(answer)
+        return answer
+    router = DecisionRouter(input_func=scripted_review if offline else input)
+    agent = LLMAgent(mode="offline" if offline else "live", router=router)
+    counts = {"executed": 0, "denied": 0, "rejected": 0, "errors": 0}
+    for task in TASKS:
+        print("\nTask: {}".format(task))
+        result = agent.run_task(task)
+        print("  Status: {} | mode: {}".format(result["status"], result["llm_mode"]))
+        if result.get("tool_name"):
+            print("  Proposed: {} {}".format(result["tool_name"], result.get("args")))
+        if result.get("decision"):
+            decision = result["decision"]
+            signals = decision.contributing_signals
+            if decision.tier is None or decision.score is None:
+                print("  Risk assessment: NOT ASSESSED (no tool proposal was routed)")
+            else:
+                print("  Confidence: {} ({}) | V/C/F: {}/{}/{} | R: {:.4f} | tier: {}".format(
+                    signals.get("confidence"), signals.get("confidence_source"),
+                    signals.get("reversibility"), signals.get("confidence"), signals.get("failure_rate"),
+                    decision.score, decision.tier.value))
+        if result["status"] == "EXECUTED":
+            counts["executed"] += 1
+            print("  Routing outcome: executed | result: {}".format(result.get("result")))
+        elif result["status"] == "DENIED_BY_HUMAN_REVIEW":
+            counts["denied"] += 1
+            print("  Routing outcome: denied; NOT EXECUTED")
+        elif result["status"].startswith("REJECTED"):
+            counts["rejected"] += 1
+            print("  Routing outcome: rejected; NOT EXECUTED")
+        else:
+            counts["errors"] += 1
+            print("  Routing outcome: {} ({})".format(result["status"], result.get("error", "")))
+        print("  Outcome log: {}".format(result.get("outcome_log")))
+    print("\nRun totals: {}".format(counts))
+    return 0
 
 
 if __name__ == "__main__":
-    run_llm_agent_demo()
+    sys.exit(main())

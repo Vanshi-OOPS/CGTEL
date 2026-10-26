@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cgtel"
 version = "0.1.0"
-description = "Context-Gated Tool Execution Layer"
+description = "Confidence-Gated Tool Execution Layer"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [

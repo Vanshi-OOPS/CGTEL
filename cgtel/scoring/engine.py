@@ -42,7 +42,17 @@ class RiskScoringEngine:
         Returns a tuple of (score, contributing_signals).
         """
         rev = self.reversibility_estimator.estimate(tool_name, args)
-        conf = self.confidence_extractor.extract(tool_name, args, **kwargs)
+        explicit_confidence = kwargs.pop("confidence", None)
+        confidence_source = kwargs.pop("confidence_source", None)
+        if explicit_confidence is None:
+            conf = self.confidence_extractor.extract(tool_name, args, **kwargs)
+            confidence_source = confidence_source or "default_mock"
+        else:
+            try:
+                conf = max(0.0, min(1.0, float(explicit_confidence)))
+            except (TypeError, ValueError):
+                conf = 0.0
+            confidence_source = confidence_source or "explicit"
         fail = self.failure_rate_lookup.get_failure_rate(tool_name)
 
         conf_gap = 1.0 - conf
@@ -55,6 +65,7 @@ class RiskScoringEngine:
             "confidence": round(float(conf), 4),
             "confidence_gap": round(float(conf_gap), 4),
             "failure_rate": round(float(fail), 4),
+            "confidence_source": confidence_source,
         }
 
         return score, signals

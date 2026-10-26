@@ -1,123 +1,79 @@
-# CGTEL: Context-Gated Tool Execution Layer
+# CGTEL: Confidence-Gated Tool Execution Layer
 
-**CGTEL** is a security and governance framework designed to intercept tool calls requested by AI agents, evaluate contextual risk, and enforce risk mitigation policies before execution.
+CGTEL intercepts proposed tool calls, calculates a weighted heuristic risk score, routes the call through policy thresholds, and logs execution outcomes. The LLM proposes calls; CGTEL controls whether the simulated tool executes.
 
----
+## Setup
 
-## Project Structure
+Requires Python 3.9 or newer. From the repository directory:
+
+```bash
+python -m venv .venv
+```
+
+Activate the environment (`.venv\Scripts\Activate.ps1` in PowerShell or `source .venv/bin/activate` in Bash), then install:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pip install -e .
+```
+
+The Gemini API key is read only from the environment. Never put it in source code.
+
+```powershell
+$env:GEMINI_API_KEY = "your-key"
+```
+
+```bash
+export GEMINI_API_KEY="your-key"
+```
+
+The model defaults to `gemini-flash-latest`; override with `CGTEL_GEMINI_MODEL`.
+
+## Execution flow
 
 ```text
-cgtel/
-├── __init__.py         # Package root
-├── config.py           # Centralized configuration parameters (signal weights, decision thresholds)
-├── types.py            # Dataclasses (ToolCallRequest, RiskDecision) and RiskTier Enum
-├── agent/              # LLM Agent reasoning core (Google Gemini API integration)
-│   ├── __init__.py
-│   └── llm_agent.py    # LLMAgent class using Gemini function calling (google-genai SDK) & @gated_tool pipeline
-├── interceptor/        # Interceptor package containing `@gated_tool` decorator
-│   └── __init__.py
-├── signals/            # Signal extractors and security risk evaluators
-│   ├── __init__.py
-│   ├── reversibility.py
-│   ├── confidence.py   # LLMConfidenceExtractor (logprobs & self-consistency agreement proxy)
-│   └── failure_rate.py
-├── scoring/            # Risk scoring engine
-│   ├── __init__.py
-│   └── engine.py       # RiskScoringEngine (R = w1*reversibility + w2*(1-confidence) + w3*failure_rate)
-├── router/             # Policy decision router
-│   ├── __init__.py
-│   └── decision_router.py # DecisionRouter (AUTO_ALLOW, LOG_AND_MONITOR, HUMAN_REVIEW)
-├── logger/             # Centralized logging & outcome logger stub
-│   ├── __init__.py
-│   └── outcome_logger.py # Stub for post-execution feedback logging
-└── tests/              # Unit test suite
-    ├── __init__.py
-    ├── test_benchmark_loader.py
-    ├── test_evaluator.py
-    ├── test_interceptor.py
-    ├── test_llm_agent.py
-    ├── test_reversibility.py
-    ├── test_confidence.py
-    ├── test_failure_rate.py
-    ├── test_scoring.py
-    └── test_router.py
-benchmark/              # Benchmark scenarios and dataset loader / evaluator
-├── __init__.py
-├── loader.py           # Scenario loader module (`Scenario` dataclass & `load_scenarios`)
-├── evaluator.py        # Benchmark evaluator comparing ungated vs CGTEL pipeline
-└── scenarios/          # 30 JSON benchmark scenario files (10 low, 10 medium, 10 high)
-    ├── low_001.json ... low_010.json
-    ├── med_001.json ... med_010.json
-    └── high_001.json ... high_010.json
-demo.py                 # Hardcoded tool call demo script across 3 risk tiers
-demo_llm.py             # LLM Agent demo script with natural language task inputs (Gemini gemini-2.5-flash)
-run_benchmark.py        # Benchmark evaluation script comparing baseline vs CGTEL
-pyproject.toml          # Project configuration file
-requirements.txt        # Package dependencies
+Natural language request
+    -> LLMAgent proposes tool + arguments
+    -> validate tool name and arguments
+    -> @gated_tool captures request
+    -> confidence + reversibility + historical failure rate
+    -> R = w1*V + w2*(1-C) + w3*F
+    -> DecisionRouter (approval prompt on HUMAN_REVIEW)
+    -> execute only after route allows
+    -> OutcomeLogger records result
+    -> executed success/failure updates shared failure-rate store
 ```
 
----
+`C` on the live path is three-sample self-consistency agreement, passed directly into scoring. Approval occurs in `DecisionRouter`; a denial leaves the function body uncalled. Failure feedback is recorded only for calls that actually execute.
 
-## Architecture Flow
-
-```text
-Natural Language Task -> LLMAgent (Gemini gemini-2.5-flash via google-genai) -> `@gated_tool` Interceptor -> Signal Extractors -> Risk Scoring Engine -> Decision Router -> Execute or Block
-```
-
-1. **LLMAgent**: Takes natural language task input and uses Google's Gemini API function calling (`google-genai` SDK, model `gemini-2.5-flash`) to select the appropriate tool and arguments.
-2. **Interceptor**: Intercepts tool call, arguments, and context, building a `ToolCallRequest`.
-3. **Signal Extractors**:
-   - **Reversibility Score**: Rule-based estimator mapping tool names and arguments to $[0.0, 1.0]$.
-   - **Confidence Extractor (`LLMConfidenceExtractor`)**: Extracts confidence from Gemini response logprobs ($P = \exp(\text{mean}(\log p))$) with a self-consistency agreement rate proxy fallback ($\frac{\text{agreement\_count}}{\text{total\_samples}}$) for function-calling responses.
-   - **Historical Failure Rate**: SQLite-backed running average lookup.
-4. **Risk Scoring Engine**: Calculates composite score $R = w_1 \cdot \text{reversibility} + w_2 \cdot (1 - \text{confidence}) + w_3 \cdot \text{failure\_rate}$.
-5. **Decision Router**: Compares score $R$ against thresholds $\tau_1 < \tau_2$:
-   - $R < \tau_1 \implies$ `AUTO_ALLOW` (executes immediately)
-   - $\tau_1 \le R < \tau_2 \implies$ `LOG_AND_MONITOR` (executes, logs flagged warning)
-   - $R \ge \tau_2 \implies$ `HUMAN_REVIEW` (prompts for manual human approval; raises `PermissionError` if denied)
-
----
-
-## Environment Configuration
-
-To enable real LLM tool-calling reasoning using Google's Gemini API (`google-genai` SDK with `gemini-2.5-flash`):
+## Commands
 
 ```bash
-# Windows (PowerShell)
-$env:GEMINI_API_KEY="your-gemini-api-key"
-
-# Linux / macOS (Bash)
-export GEMINI_API_KEY="your-gemini-api-key"
-```
-
-*Note: If `GEMINI_API_KEY` is not set, `LLMAgent` automatically falls back to a rule-based parser so all demos and tests execute reliably without error.*
-
----
-
-## Setup & Verification
-
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-pip install -e .
-```
-
-### 2. Run Hardcoded Demo
-```bash
+python -m pytest -q
 python demo.py
-```
-
-### 3. Run Real LLM Agent Demo
-```bash
+python demo_llm.py --offline
 python demo_llm.py
-```
-
-### 4. Run Benchmark Evaluation
-```bash
 python run_benchmark.py
 ```
 
-### 5. Run Pytest Suite
-```bash
-python -m pytest
+`demo_llm.py` with no argument is live mode and exits nonzero when no key is configured. Live high-risk calls use the interactive router prompt. `--offline` runs the deterministic rule-based proposal flow and labels its scripted reviewer.
+
+Expected excerpts (the actual score/output can include timestamps and elapsed times):
+
+```text
+43 passed
+OFFLINE FALLBACK - NOT A LIVE LLM RUN
+SCRIPTED REVIEWER (demo only): y
+Run totals: {'executed': 3, 'denied': 1, 'rejected': 0, 'errors': 0}
 ```
+
+The benchmark uses synthetic scenarios, a scoring engine, and auto-approval for its routing metric; it does not invoke tools or use live confidence.
+
+## Current limitations
+
+- Self-consistency agreement is a heuristic, not calibrated confidence.
+- `R` is a weighted heuristic score, not Bayesian inference or a posterior probability.
+- Reversibility classification is keyword based.
+- The included tools are simulated fakes; they do not read, delete, or transfer real data.
+- The live API path is only verified to the extent of local mocked tests unless the live demo has been run with a configured key and network access.
+- Benchmark evaluation uses auto-approval and does not execute tools or use live confidence.

@@ -35,6 +35,12 @@ def gated_tool(
             # Extract framework control kwargs prior to binding to target function signature
             ctx = kwargs.pop("_task_context", task_context)
             call_auto_approve = kwargs.pop("_auto_approve", auto_approve)
+            confidence = kwargs.pop("_confidence", None)
+            confidence_source = kwargs.pop("_confidence_source", None)
+            call_engine = kwargs.pop("_scoring_engine", engine)
+            call_router = kwargs.pop("_router", decision_router)
+            outcome_logger = kwargs.pop("_outcome_logger", None)
+            llm_mode = kwargs.pop("_llm_mode", None)
 
             # Bind target function signature
             sig = inspect.signature(fn)
@@ -50,25 +56,49 @@ def gated_tool(
             )
 
             # 2. Risk scoring step
-            decision = engine.compute_decision(fn.__name__, args=args_dict)
-
-            # 3. Decision routing step
-            decision = decision_router.route(
-                decision,
-                tool_name=fn.__name__,
-                args=args_dict,
-                auto_approve=call_auto_approve,
+            decision = call_engine.compute_decision(
+                fn.__name__, args=args_dict, confidence=confidence,
+                confidence_source=confidence_source,
             )
-
-            # Attach metadata for inspection/testing
             wrapper.last_request = request
             wrapper.last_decision = decision
 
+            # 3. Decision routing step
+            try:
+                decision = call_router.route(
+                    decision,
+                    tool_name=fn.__name__,
+                    args=args_dict,
+                    auto_approve=call_auto_approve,
+                )
+            except PermissionError:
+                if outcome_logger:
+                    outcome_logger.log_outcome(
+                        request, decision, False,
+                        metadata={"denied": True, "llm_mode": llm_mode},
+                    )
+                raise
+
+            # Attach metadata for inspection/testing
+            wrapper.last_decision = decision
+
             # 4. Target function execution
-            return fn(*args, **kwargs)
+            try:
+                result = fn(*args, **kwargs)
+            except Exception as exc:
+                if outcome_logger:
+                    outcome_logger.log_outcome(request, decision, False, error=exc,
+                                               metadata={"llm_mode": llm_mode})
+                call_engine.failure_rate_lookup.update(fn.__name__, True)
+                raise
+            if outcome_logger:
+                outcome_logger.log_outcome(request, decision, True, metadata={"llm_mode": llm_mode})
+            call_engine.failure_rate_lookup.update(fn.__name__, False)
+            return result
 
         wrapper.last_request = None
         wrapper.last_decision = None
+        wrapper._cgtel_gated = True
         return wrapper
 
     if func is None:

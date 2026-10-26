@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 class RiskTier(str, Enum):
@@ -20,6 +20,6 @@ class ToolCallRequest:
 
 @dataclass
 class RiskDecision:
-    score: float
-    tier: RiskTier
+    score: Optional[float]
+    tier: Optional[RiskTier]
     contributing_signals: Dict[str, Any] = field(default_factory=dict)

@@ -12,8 +12,10 @@ def test_gemini_tools_schema():
     assert "fake_payment_call" in tool_names
 
 
-def test_llm_agent_fallback_mode():
+def test_llm_agent_fallback_mode(monkeypatch):
     # Agent without API key should use fallback natural language parser
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     agent = LLMAgent(api_key=None)
 
     # 1. Read task -> AUTO_ALLOW
