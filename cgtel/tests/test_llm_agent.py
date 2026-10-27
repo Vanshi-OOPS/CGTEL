@@ -23,10 +23,10 @@ def test_llm_agent_fallback_mode(monkeypatch):
     assert res1["tool_name"] == "fake_file_read"
     assert res1["decision"].tier == RiskTier.AUTO_ALLOW
 
-    # 2. Delete task -> LOG_AND_MONITOR
+    # 2. Delete task -> HUMAN_REVIEW floor
     res2 = agent.run_task("Remove and delete temporary session cache", auto_approve=True)
     assert res2["tool_name"] == "fake_file_delete"
-    assert res2["decision"].tier == RiskTier.LOG_AND_MONITOR
+    assert res2["decision"].tier == RiskTier.HUMAN_REVIEW
 
     # 3. Payment task -> HUMAN_REVIEW
     res3 = agent.run_task("Process subscription payment of 149.99 USD", auto_approve=True)

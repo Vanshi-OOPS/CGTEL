@@ -1,0 +1,67 @@
+.contribution-bar {
+  width: 100%;
+}
+
+.contribution-bar__bar {
+  display: flex;
+  height: 18px;
+  border: 1px solid var(--ink);
+  overflow: hidden;
+}
+
+.contribution-bar__segment {
+  height: 100%;
+  min-width: 1px;
+}
+
+.contribution-bar__segment--reversibility {
+  background-color: var(--ink);
+}
+
+.contribution-bar__table {
+  margin-top: var(--sp-2);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.contribution-bar__table td {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 0;
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+
+.contribution-bar__table td:first-child {
+  width: 1%;
+  white-space: nowrap;
+  padding-right: var(--sp-3);
+  color: var(--ink);
+}
+
+.contribution-bar__table td:last-child {
+  color: var(--ink-soft);
+}
+
+.contribution-bar__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink);
+  vertical-align: middle;
+  margin-right: var(--sp-1);
+}
+
+.contribution-bar__swatch--solid {
+  background-color: var(--ink);
+}
+/* Weighted contribution breakdown */
+.contribution-bar{width:100%}.contribution-bar__bar{display:flex;height:13px;overflow:hidden;border:1px solid #575047;background:#eee8dc}.contribution-bar__segment{height:100%;min-width:1px;transition:width .35s}
+.contribution-bar__segment--reversibility{background:linear-gradient(90deg,#873b2d,#d15c3d)}.contribution-bar__segment--confidence{background:linear-gradient(90deg,#a98a4f,#dbb864)}.contribution-bar__segment--failure{background:linear-gradient(90deg,#66704f,#a6a985)}
+.contribution-bar__table{margin-top:10px;width:100%;border-collapse:collapse}.contribution-bar__table td{padding:3px 0;vertical-align:top;font:9px/1.5 var(--font-mono);font-variant-numeric:tabular-nums}.contribution-bar__table td:first-child{width:1%;padding-right:13px;color:var(--ink);white-space:nowrap}.contribution-bar__table td:last-child{color:var(--ink-soft)}
+.contribution-bar__swatch{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:0;border:1px solid #696052}.contribution-bar__swatch--solid{background:#9d4d37}
+/* Weighted signal segments */
+.contribution-bar__bar{height:12px;border:1px solid #594663;border-radius:5px;background:#17121d}
+.contribution-bar__segment--reversibility{background:linear-gradient(90deg,#7548d3,#c24ab8,#e95e8e)}
+.contribution-bar__table td{font-size:8px}.contribution-bar__table td:first-child{color:#e1d4eb}.contribution-bar__table td:last-child{color:#a698b3}
+.contribution-bar__swatch{border-color:#9d7eb0}.contribution-bar__swatch--solid{background:linear-gradient(135deg,#8754df,#dc5f9c)}

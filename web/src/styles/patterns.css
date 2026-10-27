@@ -1,0 +1,14 @@
+/* ─── SVG pattern definitions for hatching ─── */
+
+/* Inline SVG patterns are defined in PatternDefs.tsx component */
+
+/* Pattern fill classes */
+.fill-hatch-diagonal {
+  fill: url(#hatch-diagonal);
+}
+.fill-hatch-cross {
+  fill: url(#hatch-cross);
+}
+.fill-hatch-dots {
+  fill: url(#hatch-dots);
+}

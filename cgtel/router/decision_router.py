@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, Optional
 
 from cgtel.config import TAU_1, TAU_2
 from cgtel.logger import logger
+from cgtel.scoring.engine import stricter_decision
 from cgtel.types import RiskDecision, RiskTier
 
 
@@ -45,7 +46,17 @@ class DecisionRouter:
         Routes the risk decision, sets decision.tier, logs action, and prompts for human review if required.
         Raises PermissionError if human review is denied.
         """
-        tier = self.classify(decision.score)
+        score_tier = self.classify(decision.score)
+        floor = decision.contributing_signals.get("floor") if decision.contributing_signals else None
+        final_tier_name, floor_applied = stricter_decision(
+            score_tier.value,
+            floor,
+        )
+        tier = RiskTier(final_tier_name)
+        if decision.contributing_signals is not None:
+            decision.contributing_signals["score_based_decision"] = score_tier.value
+            decision.contributing_signals["floor_applied"] = floor_applied
+            decision.contributing_signals["final_decision"] = tier.value
         decision.tier = tier
 
         if tier == RiskTier.AUTO_ALLOW:

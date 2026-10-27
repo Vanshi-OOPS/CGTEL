@@ -48,22 +48,23 @@ def test_offline_read_executes_with_confidence_and_record():
     assert result["llm_mode"] == "offline_fallback"
     assert calls == ["config/app_settings.json"]
     assert result["decision"].tier == RiskTier.AUTO_ALLOW
-    assert result["decision"].score == pytest.approx(0.0667, abs=0.001)
+    assert result["decision"].score == pytest.approx(0.075, abs=0.001)
     assert result["decision"].contributing_signals["confidence_source"] == "offline_fallback"
     assert log.entries[-1]["outcome"] == "executed_success"
     assert store.get_failure_rate("fake_file_read") == 0.0
 
 
-def test_medium_delete_and_review_denial_are_enforced():
+def test_delete_and_payment_require_human_review():
     agent, calls, asked, store, log = make_agent(review="n")
     result = agent.run_task("delete cache")
-    assert result["decision"].tier == RiskTier.LOG_AND_MONITOR
-    assert result["decision"].score == pytest.approx(0.30, abs=0.001)
+    assert result["status"] == "DENIED_BY_HUMAN_REVIEW"
+    assert result["decision"].tier == RiskTier.HUMAN_REVIEW
+    assert result["decision"].score == pytest.approx(0.60, abs=0.001)
     result = agent.run_task("pay subscription")
     assert result["status"] == "DENIED_BY_HUMAN_REVIEW"
     assert result["decision"].tier == RiskTier.HUMAN_REVIEW
-    assert len(asked) == 1
-    assert len(calls) == 1
+    assert len(asked) == 2
+    assert len(calls) == 0
     assert log.entries[-1]["outcome"] == "denied"
     assert store.get_failure_rate("fake_payment_call") == 0.1
 
@@ -129,7 +130,7 @@ def test_confidence_values_change_risk_tier():
     result = agent.run_task("read")
     assert result["extracted_confidence"] == pytest.approx(1 / 3)
     assert result["decision"].contributing_signals["confidence"] == pytest.approx(1 / 3, abs=0.0001)
-    assert result["decision"].score == pytest.approx(0.2556, abs=0.001)
+    assert result["decision"].score == pytest.approx(0.2167, abs=0.001)
     assert result["decision"].tier == RiskTier.LOG_AND_MONITOR
     assert result["decision"].contributing_signals["confidence_source"] == "llm_self_consistency"
 

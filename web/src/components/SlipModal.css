@@ -1,0 +1,132 @@
+.slip-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 23, 18, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.slip-modal {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-hard);
+  width: 480px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+}
+
+.slip-modal__header {
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slip-modal__title {
+  font-family: var(--font-mono);
+  font-size: var(--text-label-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  font-weight: 600;
+  color: var(--vermilion);
+}
+
+.slip-modal__countdown {
+  font-family: var(--font-display);
+  font-size: var(--text-display-3);
+  font-variant-numeric: tabular-nums;
+  color: var(--vermilion);
+  min-width: 48px;
+  text-align: right;
+}
+
+.slip-modal__body {
+  padding: var(--sp-5);
+}
+
+.slip-modal__row {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.slip-modal__row:last-child {
+  border-bottom: none;
+}
+
+.slip-modal__row-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink-soft);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.slip-modal__row-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.slip-modal__score-display {
+  font-family: var(--font-display);
+  font-size: var(--text-display-2);
+  font-variant-numeric: tabular-nums;
+  color: var(--vermilion);
+}
+
+.slip-modal__actions {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 2px solid var(--ink);
+}
+
+.slip-modal__actions .btn {
+  flex: 1;
+}
+
+.slip-modal__kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+  margin-left: var(--sp-2);
+}
+
+.slip-modal__timeout-notice {
+  text-align: center;
+  padding: var(--sp-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-label-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--vermilion);
+}
+/* Human review gate */
+.slip-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:#1c1916b3;backdrop-filter:blur(3px);animation:overlay-in .2s ease-out}
+@keyframes overlay-in{from{opacity:0}to{opacity:1}}.slip-modal{width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;color:var(--ink);background:linear-gradient(150deg,#f8f4eb,#eee7d9);border:1px solid #c8b9a4;box-shadow:0 24px 90px #0005;animation:modal-in .24s cubic-bezier(.22,1,.36,1)}
+@keyframes modal-in{from{transform:translateY(9px) scale(.99);opacity:0}to{transform:none;opacity:1}}
+.slip-modal__header{display:flex;align-items:center;justify-content:space-between;padding:17px 21px;border-bottom:1px solid #cdbdaf;background:linear-gradient(100deg,#392d27,#4b3028)}
+.slip-modal__title{color:#f0a084;font:9px var(--font-mono);letter-spacing:.13em;text-transform:uppercase}.slip-modal__countdown{min-width:48px;color:#f3d8bf;text-align:right;font:30px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.slip-modal__body{padding:20px 22px}.slip-modal__row{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid #d8cfc1}.slip-modal__row:last-child{border:0}
+.slip-modal__row-label{min-width:78px;color:#82786b;font:8px var(--font-mono);letter-spacing:.1em;text-transform:uppercase}.slip-modal__row-value{color:#332e29;font:11px/1.6 var(--font-mono);word-break:break-word}
+.slip-modal__score-display{color:var(--vermilion-deep);font:48px/.95 var(--font-display);font-variant-numeric:tabular-nums}.slip-modal__actions{display:flex;gap:10px;padding:15px 22px 20px;border-top:1px solid #cdbdaf}.slip-modal__actions .btn{flex:1}
+.slip-modal__kbd{margin-left:5px;color:inherit;opacity:.65;font:8px var(--font-mono)}.slip-modal__timeout-notice{padding:22px;color:var(--vermilion-deep);text-align:center;font:9px var(--font-mono);letter-spacing:.11em;text-transform:uppercase}
+@media(prefers-reduced-motion:reduce){.slip-overlay,.slip-modal{animation:none}}
+/* Review gate in the dark console */
+.slip-overlay{background:rgba(5,4,9,.78);backdrop-filter:blur(7px)}
+.slip-modal{border:1px solid #735088;border-radius:12px;color:#f5edfb;background:radial-gradient(ellipse at 95% 0%,#9d49a71c,transparent 48%),linear-gradient(145deg,#211829,#141019 72%);box-shadow:0 26px 100px #000b,0 0 45px #943dc222}
+.slip-modal__header{border-bottom:1px solid #483653;border-radius:11px 11px 0 0;background:linear-gradient(105deg,#342142,#4a203c)}
+.slip-modal__title{color:#f6b5e6}.slip-modal__countdown{color:#ffc5ac}
+.slip-modal__row{border-color:#382e43}.slip-modal__row-label{color:#a699b4}.slip-modal__row-value{color:#e9def2}
+.slip-modal__score-display{color:#ff9cb6}.slip-modal__actions{border-color:#44334f}
+.slip-modal__kbd{color:#c9b4db}.slip-modal__timeout-notice{color:#ff9eae}

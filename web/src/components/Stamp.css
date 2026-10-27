@@ -1,0 +1,50 @@
+.stamp-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stamp-svg {
+  overflow: visible;
+}
+
+/* Thunk animation */
+@keyframes stamp-thunk {
+  0% {
+    transform: scale(1.35) rotate(3deg);
+    opacity: 0.7;
+  }
+  60% {
+    transform: scale(0.98) rotate(-0.5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes screen-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -1px); }
+}
+
+.stamp-animated {
+  animation: stamp-thunk 140ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.stamp-shake-container {
+  animation: screen-shake 140ms ease-out;
+}
+/* Decision stamps */
+.stamp-container{display:inline-flex;align-items:center;justify-content:center}.stamp-svg{overflow:visible}
+@keyframes stamp-thunk{0%{transform:scale(1.28) rotate(3deg);opacity:.65}60%{transform:scale(.98) rotate(-.5deg);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes screen-shake{0%,100%{transform:translate(0)}20%{transform:translate(-2px,1px)}40%{transform:translate(2px,-1px)}60%{transform:translate(-1px,2px)}80%{transform:translate(1px,-1px)}}
+.stamp-animated{animation:stamp-thunk 180ms cubic-bezier(.22,1,.36,1) forwards}.stamp-shake-container{animation:screen-shake 140ms ease-out}
+@media(prefers-reduced-motion:reduce){.stamp-animated,.stamp-shake-container{animation:none}}
+/* Clean digital decision mark */
+.stamp-svg{filter:drop-shadow(0 0 13px #d860a51c)}
+.stamp-animated{animation:stamp-thunk 180ms cubic-bezier(.22,1,.36,1) forwards}

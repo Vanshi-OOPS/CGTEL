@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import pytest
 from cgtel.interceptor import gated_tool
+from cgtel.scoring.engine import RiskScoringEngine
 from cgtel.types import RiskDecision, RiskTier, ToolCallRequest
 
 
@@ -59,7 +60,9 @@ def test_gated_tool_pipeline_tiers():
     def delete_cache():
         return "DELETED"
 
-    @gated_tool
+    payment_engine = RiskScoringEngine(severity_priors={"payment_process": 0.2})
+
+    @gated_tool(scoring_engine=payment_engine)
     def payment_process():
         return "PAID"
 

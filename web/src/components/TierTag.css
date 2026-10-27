@@ -1,0 +1,49 @@
+.tier-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-label-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  font-weight: 600;
+  line-height: 1.4;
+  border-radius: var(--radius-sm);
+}
+
+.tier-tag--auto {
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  background: transparent;
+}
+
+.tier-tag--monitor {
+  color: var(--ochre-text);
+  border: 2px solid var(--ochre);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-tag--review {
+  color: var(--vermilion);
+  border: 2px solid var(--vermilion);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-tag__pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+}
+/* Policy tier markers */
+.tier-tag{position:relative;display:inline-flex;align-items:center;gap:8px;padding:7px 10px;overflow:hidden;font:9px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;line-height:1.3}
+.tier-tag--auto{color:#4e5941;border:1px solid #899174;background:linear-gradient(100deg,#e1e4d4,#eef0e7)}.tier-tag--monitor{color:#755916;border:1px solid #c4a15b;background:linear-gradient(100deg,#f0e2c0,#f4edda)}.tier-tag--review{color:#8f3928;border:1px solid #cb795f;background:linear-gradient(100deg,#f4ddd1,#f7eae1)}.tier-tag__pattern{position:absolute;inset:0;opacity:.1}
+/* Tier badges for dark surfaces */
+.tier-tag{border-radius:5px;font-weight:500}.tier-tag--auto{color:#dbccff;border:1px solid #876bd1;background:linear-gradient(100deg,#473577,#382648)}
+.tier-tag--monitor{color:#ffd4ac;border:1px solid #b67b56;background:linear-gradient(100deg,#573439,#462637)}
+.tier-tag--review{color:#ffd0da;border:1px solid #c55379;background:linear-gradient(100deg,#642c51,#48253d)}
+.tier-tag__pattern{opacity:.08}

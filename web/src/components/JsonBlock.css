@@ -1,0 +1,62 @@
+.json-block {
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  border-radius: var(--radius-sm);
+}
+
+.json-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  user-select: none;
+}
+
+.json-block__header:hover {
+  background: var(--paper);
+}
+
+.json-block__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink-soft);
+}
+
+.json-block__toggle {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.json-block__content {
+  padding: var(--sp-3);
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.json-block__pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+/* Structured event data */
+.json-block{border:1px solid #d0c7b8;background:#ebe5d9a6}.json-block__header{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;cursor:pointer;user-select:none}.json-block__header:hover{background:#ffffff7a}
+.json-block__label,.json-block__toggle{color:#6e665a;font:8px var(--font-mono);letter-spacing:.1em;text-transform:uppercase}.json-block__content{max-height:300px;overflow:auto;padding:11px;border-top:1px solid #d0c7b8}.json-block__pre{margin:0;color:#423a32;font:10px/1.6 var(--font-mono);white-space:pre-wrap;word-break:break-word}
+/* JSON and telemetry surfaces */
+.json-block{border:1px solid #3b3046;border-radius:6px;background:#100d15}
+.json-block__header:hover{background:#211828}.json-block__header{border-bottom-color:#392e43}
+.json-block__label,.json-block__toggle{color:#b5a6c2}.json-block__content{border-top-color:#392e43}
+.json-block__pre{color:#d7cbe2}
